@@ -14,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,10 @@ public class MultiSelectImagePanel extends JPanel {
    * 
    */
   private static final long serialVersionUID = 2348249578466166739L;
+
+  private static int toolbarWidth = 100;
+
+  private static int toolbarHeigth = 20;
 
   private List<Rectangle> regions;
   private List<String> regionsLabels;
@@ -88,12 +93,12 @@ public class MultiSelectImagePanel extends JPanel {
           int tbye = (int) rectangle.getY() + (int) rectangle.getHeight() + 22;
 
           int tbx1i = (int) rectangle.getX() + (int) rectangle.getWidth() / 2
-              - 30 + 10;
+              - MultiSelectImagePanel.toolbarWidth/2 + 5;
           int tbx1e = (int) rectangle.getX() + (int) rectangle.getWidth() / 2
               - 1;
-          int tbx2i = (int) rectangle.getX() + (int) rectangle.getWidth() / 2;
+          int tbx2i = (int) rectangle.getX() + (int) rectangle.getWidth() / 2 +1 ;
           int tbx2e = (int) rectangle.getX() + (int) rectangle.getWidth() / 2
-              + 20;
+              + MultiSelectImagePanel.toolbarWidth/2 - 5;
 
           int q1 = (e.getX() >= cx1i && e.getX() < cx1e) ? 1 : 0;
           int q2 = (e.getX() >= cx2i && e.getX() < cx2e) ? 2 : 0;
@@ -346,9 +351,41 @@ public class MultiSelectImagePanel extends JPanel {
 
       if (i != this.selectedRegionIndex) {
         graphics2d.setStroke(new BasicStroke(1));
-        graphics2d.setColor(new Color(60, 120, 60,50));
-        graphics2d.fill(this.regions.get(i));
+        graphics2d.setColor(new Color(230, 230, 230));
+        BufferedImage im = new BufferedImage(
+            (int)this.regions.get(i).getWidth(),
+            (int)this.regions.get(i).getHeight(),
+            BufferedImage.TYPE_INT_RGB);
+        
+        ((Graphics2D)im.getGraphics()).drawImage(
+            this.background,
+            0,
+            0,
+            (int) (this.regions.get(i).getWidth()),
+            (int) (this.regions.get(i).getHeight()),
+            (int) this.regions.get(i).getX(),
+            (int) this.regions.get(i).getY(),
+            (int) (this.regions.get(i).getX() + this.regions.get(i).getWidth()),
+            (int) (this.regions.get(i).getY() + this.regions.get(i).getHeight()),
+            null);
+        
+        RescaleOp rescaleOp = new RescaleOp(1.2f, 15, null);
+        rescaleOp.filter(im, im);
+
         graphics2d.draw(this.regions.get(i));
+        
+        graphics2d.drawImage(
+            im,
+            (int) this.regions.get(i).getX(),
+            (int) this.regions.get(i).getY(),
+            (int) (this.regions.get(i).getX() + this.regions.get(i).getWidth()),
+            (int) (this.regions.get(i).getY() + this.regions.get(i).getHeight()),
+            0,
+            0,
+            (int) (this.regions.get(i).getWidth()),
+            (int) (this.regions.get(i).getHeight()),
+            null);
+        
       }
 
     }
@@ -358,7 +395,7 @@ public class MultiSelectImagePanel extends JPanel {
 
       Color lightGreen = new Color(100, 220, 100);
       Color lightRed = new Color(220, 100, 100);
-      Color lightBlue = new Color(0, 190, 255);
+      Color lightBlue = new Color(255,255, 255);
       Color darkBlue = new Color(0, 140, 180);
 
       // -------------------------------------------------------------------- //
@@ -378,8 +415,8 @@ public class MultiSelectImagePanel extends JPanel {
       FontMetrics met = this.getFontMetrics(font);
       String regionLabel = this.regionsLabels.get(this.selectedRegionIndex);
       int regionLabelWidth = met.stringWidth(regionLabel);
-      graphics2d.drawString(regionLabel, (int) (rectangle.getX()
-          + rectangle.getWidth() / 2 - regionLabelWidth / 2),
+      double centerX = rectangle.getX() + rectangle.getWidth() / 2;
+      graphics2d.drawString(regionLabel, (int) (centerX - regionLabelWidth / 2),
           (int) rectangle.getY() - 2);
       // -------------------------------------------------------------------- //
 
@@ -410,20 +447,37 @@ public class MultiSelectImagePanel extends JPanel {
 
       // -------------------------------------------------------------------- //
       // Draw toolbar
-      Rectangle toolbar = new Rectangle(0, 0, 60, 20);
-      graphics2d.setColor(new Color(180, 180, 180, 100));
+      Rectangle toolbar = new Rectangle(0, 0, toolbarWidth, toolbarHeigth);
+      graphics2d.setColor(new Color(180, 180, 180, 230));
+
+      graphics2d.setColor(new Color(0, 0, 0, 230));
+      double bottomY = rectangle.getY() + rectangle.getHeight();
       toolbar.setLocation(
-          new Point((int) (rectangle.getX() + rectangle.getWidth() / 2 - 30),
-              (int) (rectangle.getY() + rectangle.getHeight() + 2)));
+          new Point((int) (centerX - toolbarWidth/2), (int) (bottomY + 2)));
 
       graphics2d.fillRoundRect((int) toolbar.getX(), (int) toolbar.getY(),
           (int) toolbar.getWidth(), (int) toolbar.getHeight(), 10, 10);
-      graphics2d.setFont(new Font("Times New Roman", 1, 18));
+
+      graphics2d.setColor(new Color(255, 255, 255, 50));
+      graphics2d.drawRoundRect((int) toolbar.getX(), (int) toolbar.getY(),
+          (int) toolbar.getWidth(), (int) toolbar.getHeight(), 10, 10);
+      
+      
+      graphics2d.setFont(new Font("Arial", Font.BOLD, 12));
+      FontMetrics fmt = graphics2d.getFontMetrics();
+      String labelString = "Label";
+      int labelWidth = fmt.stringWidth(labelString);
       graphics2d.setColor((q == 9) ? lightBlue : darkBlue);
-      graphics2d.drawString("T", (int) toolbar.getX() + 10,
+
+      
+      int optGap = 5;
+      graphics2d.drawString(labelString, (int) centerX - labelWidth-optGap,
           (int) toolbar.getY() + 15);
+      
+      String closeString = "Cerrar";
+
       graphics2d.setColor((q == 10) ? lightBlue : darkBlue);
-      graphics2d.drawString("X", (int) toolbar.getX() + 38,
+      graphics2d.drawString(closeString, (int) centerX + optGap,
           (int) toolbar.getY() + 15);
       // -------------------------------------------------------------------- //
 
@@ -438,8 +492,10 @@ public class MultiSelectImagePanel extends JPanel {
       Rectangle currentRegion = this.regions.get(this.selectedRegionIndex);
 
       Rectangle toolbarR = new Rectangle(
-          (int) (currentRegion.getX() + currentRegion.getWidth() / 2 - 30),
-          (int) (currentRegion.getY() + currentRegion.getHeight()), 60, 22);
+          (int) (currentRegion.getX() + currentRegion.getWidth() / 2 - MultiSelectImagePanel.toolbarWidth/2),
+          (int) (currentRegion.getY() + currentRegion.getHeight()), 
+          MultiSelectImagePanel.toolbarWidth, 
+          MultiSelectImagePanel.toolbarHeigth+2);
 
       boolean result = x >= toolbarR.getX()
           && x <= toolbarR.getX() + toolbarR.getWidth() && y >= toolbarR.getY()
