@@ -562,4 +562,14 @@ public class MultiSelectImagePanel extends JPanel {
     return this.regionsLabels;
   }
 
+  public void setRegionsAndLabels(List<Rectangle> regions,
+      List<String> labels) {
+
+    this.regions = regions;
+    this.regionsLabels = labels;
+    
+    this.updateUI();
+    
+  }
+
 }
