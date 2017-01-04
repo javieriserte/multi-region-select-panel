@@ -30,10 +30,13 @@ public class MultiSelectImagePanel extends JPanel {
   private static final long serialVersionUID = 2348249578466166739L;
 
   private static int toolbarWidth = 100;
-
   private static int toolbarHeigth = 20;
 
+  private List<ImageRegion> imRegions;
+  
+  @Deprecated
   private List<Rectangle> regions;
+  @Deprecated
   private List<String> regionsLabels;
 
   private int selectedRegionIndex;
